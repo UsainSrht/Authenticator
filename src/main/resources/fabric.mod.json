@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "authenticator",
   "version": "${version}",
 
   "name": "Example Mod",
@@ -19,17 +19,20 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "com.purpurmc.authenticator.Authenticator"
+    ],
+    "client": [
+      "com.purpurmc.authenticator.AuthenticatorClient"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "authenticator.mixins.json"
   ],
 
   "depends": {
     "fabricloader": ">=0.14.14",
     "fabric-api": "*",
-    "minecraft": "~1.19.3",
+    "minecraft": "~1.19.4",
     "java": ">=17"
   },
   "suggests": {
