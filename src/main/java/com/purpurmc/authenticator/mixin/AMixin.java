@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class AMixin {
     @Inject(at = @At("HEAD"), method = "init()V")
     private void init(CallbackInfo info) {
-        Authenticator.LOGGER.info("This line is printed by an example mod mixin!");
+        Authenticator.LOGGER.info("Mixin test message");
     }
 }
