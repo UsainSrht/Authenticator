@@ -9,8 +9,9 @@
     "UsainSrht"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://modrinth.com/mod/authenticator",
+    "sources": "https://github.com/UsainSrht/Authenticator",
+    "issues": "https://github.com/UsainSrht/Authenticator/issues"
   },
 
   "license": "MIT License",
@@ -23,6 +24,9 @@
     ],
     "client": [
       "com.purpurmc.authenticator.AuthenticatorClient"
+    ],
+    "modmenu": [
+      "com.purpurmc.authenticator.ModMenu"
     ]
   },
   "mixins": [

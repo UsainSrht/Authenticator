@@ -1,0 +1,9 @@
+{
+  "key.categories.authenticator": "Authenticator Keys",
+  "key.open_authenticator": "Open authenticator menu",
+  "screen.authenticator.title": "Authenticator",
+  "button.authenticator.create": "Create",
+  "button.authenticator.delete": "Delete",
+  "button.authenticator.edit": "Edit",
+  "button.authenticator.back": "Back"
+}
