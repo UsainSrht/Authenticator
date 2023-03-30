@@ -2,9 +2,13 @@
   "key.categories.authenticator": "Authenticator Keys",
   "key.open_authenticator": "Open authenticator menu",
   "screen.authenticator.title": "Authenticator",
+  "screen.authenticator.create.title": "Create",
+  "button.authenticator.create.save": "Save",
+  "button.authenticator.create.cancel": "Cancel",
   "button.authenticator.create": "Create",
   "button.authenticator.delete": "Delete",
   "button.authenticator.edit": "Edit",
   "button.authenticator.back": "Back",
-  "text.authenticator.loading": "Loading"
+  "text.authenticator.loading": "Loading",
+  "text.authenticator.copy": "Copied to clipboard."
 }
