@@ -3,6 +3,7 @@ package com.purpurmc.authenticator.screens.widgets;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.purpurmc.authenticator.GAuth;
+import com.purpurmc.authenticator.Secret;
 import com.purpurmc.authenticator.screens.AuthenticatorScreen;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -21,10 +22,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.Entry> {
     private final AuthenticatorScreen screen;
@@ -44,16 +42,6 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
         super.render(matrices, mouseX, mouseY, delta);
     }
 
-    /*public void addEntry(SecretEntry entry) {
-        this.secrets.add(entry);
-        updateEntries();
-    }
-
-    public void removeEntry(SecretEntry entry) {
-        this.secrets.remove(entry);
-        updateEntries();
-    }*/
-
     private void updateEntries() {
         this.clearEntries();
         this.secrets.forEach(this::addEntry);
@@ -66,6 +54,13 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
 
     public void setSecrets(List<SecretEntry> secrets) {
         this.secrets = secrets;
+        this.updateEntries();
+    }
+
+    public void setSecrets(HashSet<Secret> secrets) {
+        for (Secret secret : secrets) {
+            this.secrets.add(new SecretEntry(this.client, secret));
+        }
         this.updateEntries();
     }
 
@@ -99,12 +94,11 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
         private int time;
         private long clickTime;
 
-
-        public SecretEntry(MinecraftClient client, String name, String issuer, String secret) {
+        public SecretEntry(MinecraftClient client, Secret secret) {
             this.client = client;
-            this.name = name;
-            this.issuer = issuer;
-            this.secret = secret;
+            this.name = secret.name;
+            this.issuer = secret.issuer;
+            this.secret = secret.secret;
         }
 
         @Override
@@ -112,20 +106,22 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
             TextRenderer renderer = this.client.textRenderer;
 
             int color = -1;
-            renderer.draw(matrices, this.name, x + 10, y + 1, color);
-            int nameWidth = renderer.getWidth(this.name);
-            renderer.draw(matrices, this.issuer, x + 15 + nameWidth, y + 1, color);
+            renderer.draw(matrices, this.name, x + 6, y + 1, color);
+            renderer.draw(matrices, this.issuer, x + 6, y + 11, color);
             code = GAuth.getCode(this.secret);
             String codeString = String.valueOf(code);
             int codeWidth = renderer.getWidth(codeString);
-            renderer.draw(matrices, codeString, x + entryWidth - codeWidth - 5, y + 1, color);
-            time = 30 - (Calendar.SECOND % 30);
-            renderer.draw(matrices, String.valueOf(time), x + entryWidth - codeWidth - 5, y + 7, color);
+            renderer.draw(matrices, codeString, x + entryWidth - codeWidth - 10, y + 1, color);
+            time = (int) (30 - ((new Date().getTime() / 1000) % 30));
+            String timeString = String.valueOf(time);
+            int timeWidth = renderer.getWidth(timeString);
+            renderer.draw(matrices, timeString, x + entryWidth - timeWidth - 10, y + 11, color);
         }
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
             this.setFocused(true);
+            ((AuthenticatorScreen)this.client.currentScreen).updateButtonActivationStates();
             if (Util.getMeasuringTimeMs() - this.clickTime < 250L) {
                 String code = String.valueOf(this.code);
                 this.client.keyboard.setClipboard(code);

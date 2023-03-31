@@ -6,13 +6,10 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.gui.widget.EditBoxWidget;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<Screen> {
     private static final Text TITLE = Text.translatable("screen.authenticator.title");
@@ -22,6 +19,10 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
     private static final Text backButtonText = Text.translatable("button.authenticator.back");
 
     private final Screen background;
+    private SecretsWidget.SecretEntry selected;
+    private SecretsWidget secretsWidget;
+    private ButtonWidget editButton;
+    private ButtonWidget deleteButton;
 
     public AuthenticatorScreen(Screen background) {
         super(TITLE);
@@ -45,12 +46,19 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
             btn.active = false;
         }).dimensions(this.width / 2 - 103, this.height - 40, 100, 20).build();
         deleteButton.active = false;
+        this.deleteButton = deleteButton;
 
         ButtonWidget editButton = ButtonWidget.builder(editButtonText, (btn) -> {
             if (this.client == null) return;
             btn.active = false;
+            AlwaysSelectedEntryListWidget.Entry entry = secretsWidget.getSelectedOrNull();
+            if (entry != null) {
+                SecretsWidget.SecretEntry secretEntry = (SecretsWidget.SecretEntry) entry;
+                //Authenticator.getInstance().removeSecret(secretEntry)
+            }
         }).dimensions(this.width / 2 + 3, this.height - 40, 100, 20).build();
         editButton.active = false;
+        this.editButton = editButton;
 
         ButtonWidget backButton = ButtonWidget.builder(backButtonText, (btn) -> {
             btn.active = false;
@@ -66,16 +74,8 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
                 this.height - 50,
                 25
         );
-        List<SecretsWidget.SecretEntry> secrets = new ArrayList<>();
-        for (String name : Authenticator.getInstance().secrets.keySet()) {
-            secrets.add(new SecretsWidget.SecretEntry(
-                    this.client,
-                    name,
-                    "issuer",
-                    Authenticator.getInstance().secrets.get(name)
-                    ));
-        }
-        secretsWidget.setSecrets(secrets);
+        secretsWidget.setSecrets(Authenticator.getInstance().secrets);
+        this.secretsWidget = secretsWidget;
 
         this.addDrawableChild(secretsWidget);
         this.addDrawableChild(createButton);
@@ -87,9 +87,9 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(matrices);
         super.render(matrices, mouseX, mouseY, delta);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, title, this.width / 2, 10, 0xFFFFFFFF);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, Text.literal(mouseX + " " + mouseY + " " + delta), this.width / 2, 20, 0xFFFFFFFF);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, Text.literal("width " + this.width + " height " + this.height), this.width / 2, 30, 0xFFFFFFFF);
+        DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, title, this.width / 2, 15, 0xFFFFFFFF);
+        //DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, Text.literal(mouseX + " " + mouseY + " " + delta), this.width / 2, 20, 0xFFFFFFFF);
+        //DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, Text.literal("width " + this.width + " height " + this.height), this.width / 2, 30, 0xFFFFFFFF);
     }
 
     @Override
@@ -108,6 +108,14 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
     }
 
     public void updateButtonActivationStates() {
-
+        AlwaysSelectedEntryListWidget.Entry entry = secretsWidget.getSelectedOrNull();
+        if (entry == null) {
+            editButton.active = false;
+            deleteButton.active = false;
+        }
+        else {
+            editButton.active = true;
+            deleteButton.active = true;
+        }
     }
 }

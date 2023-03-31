@@ -7,6 +7,7 @@ import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.purpurmc.authenticator.Authenticator;
 import com.purpurmc.authenticator.GAuth;
+import com.purpurmc.authenticator.Secret;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.*;
@@ -15,7 +16,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashMap;
+import java.util.HashSet;
 
 import static com.mojang.brigadier.arguments.StringArgumentType.string;
 import static com.purpurmc.authenticator.commands.arguments.SecretsArgumentType.secretName;
@@ -35,12 +36,18 @@ public class AuthenticatorCommand {
                                         .executes(
                                                 ctx -> createSecret(ctx.getSource(),
                                                         ctx.getArgument("secret", String.class),
-                                                        ctx.getArgument("name", String.class))))))
+                                                        ctx.getArgument("name", String.class)))
+                                        .then(argument("issuer", string())
+                                                .executes(ctx -> createSecret(ctx.getSource(),
+                                                        ctx.getArgument("secret", String.class),
+                                                        ctx.getArgument("name", String.class),
+                                                        ctx.getArgument("issuer", String.class)
+                                                ))))))
         );
     }
 
-    private static int getCode(FabricClientCommandSource source, String secretname) {
-        String secret = Authenticator.getInstance().secrets.get(secretname);
+    private static int getCode(FabricClientCommandSource source, String secretName) {
+        String secret = Authenticator.getInstance().getSecretFromName(secretName).secret;
         int code = GAuth.getCode(secret);
         String stringCode = String.valueOf(code);
         ClickEvent clickEvent = new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, stringCode);
@@ -55,16 +62,20 @@ public class AuthenticatorCommand {
         return Command.SINGLE_SUCCESS;
     }
 
-    private static int createSecret(FabricClientCommandSource source, String secret, String name) {
+    public static int createSecret(FabricClientCommandSource source, String secret, String name) {
+        return createSecret(source, secret, name, "");
+    }
+    public static int createSecret(FabricClientCommandSource source, String secret, String name, String issuer) {
 
-        if (Authenticator.getInstance().secrets.containsKey(name)) {
+        if (Authenticator.getInstance().getSecretFromName(name) != null) {
             Text text = Text.literal("secret " + name + " already exists.");
             source.sendError(text);
             return 0;
         }
-        Authenticator.getInstance().secrets.put(name, secret);
+        Secret secretObject = new Secret(name, issuer, secret);
+        Authenticator.getInstance().secrets.add(secretObject);
         Gson gson = new Gson();
-        Type gsonType = new TypeToken<HashMap<String, String>>(){}.getType();
+        Type gsonType = new TypeToken<HashSet<Secret>>(){}.getType();
         String json = gson.toJson(Authenticator.getInstance().secrets, gsonType);
         File config = new File(FabricLoader.getInstance().getConfigDir().toString(), "authenticator-secrets.json");
         try {

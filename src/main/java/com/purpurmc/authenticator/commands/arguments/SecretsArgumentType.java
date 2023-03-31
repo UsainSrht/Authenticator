@@ -13,6 +13,7 @@ import net.minecraft.text.Text;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 
 public class SecretsArgumentType implements ArgumentType<String> {
@@ -27,7 +28,7 @@ public class SecretsArgumentType implements ArgumentType<String> {
     @Override
     public String parse(final StringReader stringReader) throws CommandSyntaxException {
         String string = stringReader.readUnquotedString();
-        if (!Authenticator.getInstance().secrets.containsKey(string)) {
+        if (Authenticator.getInstance().getSecretFromName(string) == null) {
             throw INVALID_SECRET_NAME.create(string);
         }
         return string;
@@ -35,7 +36,10 @@ public class SecretsArgumentType implements ArgumentType<String> {
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(final CommandContext<S> context, final SuggestionsBuilder builder) {
-        return CommandSource.suggestMatching(Authenticator.getInstance().secrets.keySet(), builder);
+        HashSet<String> names = new HashSet<>();
+        Authenticator.getInstance().secrets.forEach(secret -> names.add(secret.name));
+        return CommandSource.suggestMatching(names, builder);
+
     }
 
     @Override
