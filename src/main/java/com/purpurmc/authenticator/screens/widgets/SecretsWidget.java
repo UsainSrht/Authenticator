@@ -49,8 +49,14 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
 
     public void deleteEntry(SecretEntry entry) {
         Authenticator.LOGGER.info("deleteEntry before secrets " + secrets.size() + "entrycount " + super.getEntryCount());
-        secrets.remove(entry);
-        super.removeEntry(entry);
+        for (SecretEntry se : secrets) {
+            if (se.getSecret().equals(entry.getSecret())) {
+                Authenticator.LOGGER.info("found exact");
+                secrets.remove(se);
+                super.removeEntry(se);
+                break;
+            }
+        }
         Authenticator.LOGGER.info("deleteEntry after secrets " + secrets.size() + "entrycount " + super.getEntryCount());
         updateEntries();
     }
@@ -138,10 +144,8 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Secret)) return false;
-            Secret anotherSecret = (Secret)o;
-            return (this.name.equals(anotherSecret.name) && this.issuer.equals(anotherSecret.issuer) &&
-                    this.secret.equals(anotherSecret.secret));
+            if (!(o instanceof SecretEntry)) return false;
+            return this.getSecret().equals(((SecretEntry) o).getSecret());
         }
 
         @Override

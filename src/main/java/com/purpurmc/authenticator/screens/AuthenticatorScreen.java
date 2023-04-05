@@ -7,6 +7,7 @@ import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.gui.screen.world.WorldListWidget;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
@@ -21,7 +22,6 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
     private static final Text backButtonText = Text.translatable("button.authenticator.back");
 
     private final Screen background;
-    private SecretsWidget.SecretEntry selected;
     public SecretsWidget secretsWidget;
     private ButtonWidget editButton;
     private ButtonWidget deleteButton;
