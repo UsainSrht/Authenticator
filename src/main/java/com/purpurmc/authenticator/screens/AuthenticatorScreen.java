@@ -1,11 +1,13 @@
 package com.purpurmc.authenticator.screens;
 
 import com.purpurmc.authenticator.Authenticator;
+import com.purpurmc.authenticator.Secret;
 import com.purpurmc.authenticator.screens.widgets.SecretsWidget;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.world.WorldListWidget;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
@@ -20,7 +22,7 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
 
     private final Screen background;
     private SecretsWidget.SecretEntry selected;
-    private SecretsWidget secretsWidget;
+    public SecretsWidget secretsWidget;
     private ButtonWidget editButton;
     private ButtonWidget deleteButton;
 
@@ -44,6 +46,7 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
         ButtonWidget deleteButton = ButtonWidget.builder(deleteButtonText, (btn) -> {
             if (this.client == null) return;
             btn.active = false;
+            deleteSecret();
         }).dimensions(this.width / 2 - 103, this.height - 40, 100, 20).build();
         deleteButton.active = false;
         this.deleteButton = deleteButton;
@@ -51,11 +54,7 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
         ButtonWidget editButton = ButtonWidget.builder(editButtonText, (btn) -> {
             if (this.client == null) return;
             btn.active = false;
-            AlwaysSelectedEntryListWidget.Entry entry = secretsWidget.getSelectedOrNull();
-            if (entry != null) {
-                SecretsWidget.SecretEntry secretEntry = (SecretsWidget.SecretEntry) entry;
-                //Authenticator.getInstance().removeSecret(secretEntry)
-            }
+            editSecret();
         }).dimensions(this.width / 2 + 3, this.height - 40, 100, 20).build();
         editButton.active = false;
         this.editButton = editButton;
@@ -106,7 +105,6 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
     public boolean shouldCloseOnEsc() {
         return true;
     }
-
     public void updateButtonActivationStates() {
         AlwaysSelectedEntryListWidget.Entry entry = secretsWidget.getSelectedOrNull();
         if (entry == null) {
@@ -116,6 +114,26 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
         else {
             editButton.active = true;
             deleteButton.active = true;
+        }
+    }
+
+    public void deleteSecret() {
+        AlwaysSelectedEntryListWidget.Entry entry = secretsWidget.getSelectedOrNull();
+        if (entry != null) {
+            SecretsWidget.SecretEntry secretEntry = (SecretsWidget.SecretEntry) entry;
+            Authenticator.getInstance().removeSecret(secretEntry.name);
+            Authenticator.LOGGER.info("before " + secretsWidget.children().size());
+            secretsWidget.deleteEntry(secretEntry);
+            Authenticator.LOGGER.info("after " + secretsWidget.children().size());
+        }
+        secretsWidget.setSelected(null);
+    }
+
+    private void editSecret() {
+        AlwaysSelectedEntryListWidget.Entry entry = secretsWidget.getSelectedOrNull();
+        if (entry != null) {
+            SecretsWidget.SecretEntry secretEntry = (SecretsWidget.SecretEntry) entry;
+            this.client.setScreen(new EditSecretScreen(this, secretEntry.getSecret()));
         }
     }
 }

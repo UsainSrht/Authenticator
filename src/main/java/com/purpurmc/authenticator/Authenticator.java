@@ -71,10 +71,24 @@ public class Authenticator implements ModInitializer {
 
     public void createSecret(String secret, String name, String issuer) {
         Secret secretObject = new Secret(name, issuer, secret);
-        Authenticator.getInstance().secrets.add(secretObject);
+        secrets.add(secretObject);
+        saveSecrets();
+    }
+
+    public void removeSecret(String secretName) {
+        LOGGER.info("removeSecret " + secretName);
+        Secret secret = getSecretFromName(secretName);
+        if (secret == null) return;
+        LOGGER.info("before removeSecret " + secrets.size());
+        secrets.remove(secret);
+        LOGGER.info("after removeSecret " + secrets.size());
+        saveSecrets();
+    }
+
+    public void saveSecrets() {
         Gson gson = new Gson();
         Type gsonType = new TypeToken<HashSet<Secret>>(){}.getType();
-        String json = gson.toJson(Authenticator.getInstance().secrets, gsonType);
+        String json = gson.toJson(secrets, gsonType);
         File config = new File(FabricLoader.getInstance().getConfigDir().toString(), "authenticator-secrets.json");
         try {
             FileWriter fw = new FileWriter(config);
@@ -84,5 +98,14 @@ public class Authenticator implements ModInitializer {
         catch (IOException e) {
             Authenticator.LOGGER.error("An error occurred while saving the secret.", e);
         }
+    }
+
+    public void replaceSecret(Secret secret1, Secret secret2) {
+        LOGGER.info("replace start secrets size " + secrets.size());
+        secrets.remove(secret1);
+        LOGGER.info("replace after remove secrets size " + secrets.size());
+        secrets.add(secret2);
+        LOGGER.info("replace after add secrets size " + secrets.size());
+        saveSecrets();
     }
 }

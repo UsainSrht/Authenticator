@@ -8,6 +8,9 @@
   "button.authenticator.create": "Create",
   "button.authenticator.delete": "Delete",
   "button.authenticator.edit": "Edit",
+  "screen.authenticator.edit.title": "Edit",
+  "button.authenticator.edit.save": "Save",
+  "button.authenticator.edit.cancel": "Cancel",
   "button.authenticator.back": "Back",
   "text.authenticator.loading": "Loading",
   "text.authenticator.copy": "Copied to clipboard."

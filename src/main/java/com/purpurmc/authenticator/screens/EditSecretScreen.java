@@ -1,6 +1,7 @@
 package com.purpurmc.authenticator.screens;
 
 import com.purpurmc.authenticator.Authenticator;
+import com.purpurmc.authenticator.Secret;
 import com.purpurmc.authenticator.commands.AuthenticatorCommand;
 import joptsimple.internal.Strings;
 import net.minecraft.client.MinecraftClient;
@@ -17,16 +18,18 @@ import net.minecraft.text.Text;
 import java.util.Timer;
 import java.util.TimerTask;
 
-public class CreateSecretScreen extends Screen {
+public class EditSecretScreen extends Screen {
 
-    private static final Text TITLE = Text.translatable("screen.authenticator.create.title");
-    private static final Text saveButtonText = Text.translatable("button.authenticator.create.save");
-    private static final Text cancelButtonText = Text.translatable("button.authenticator.create.cancel");
+    private static final Text TITLE = Text.translatable("screen.authenticator.edit.title");
+    private static final Text saveButtonText = Text.translatable("button.authenticator.edit.save");
+    private static final Text cancelButtonText = Text.translatable("button.authenticator.edit.cancel");
     private final Screen background;
+    private final Secret secret;
 
-    public CreateSecretScreen(Screen background) {
+    public EditSecretScreen(Screen background, Secret secret) {
         super(TITLE);
         this.background = background;
+        this.secret = secret;
     }
 
     @Override
@@ -40,7 +43,9 @@ public class CreateSecretScreen extends Screen {
                 this.height / 2 + 25,
                 200,
                 20,
-                Text.literal("name"), Text.literal("name"));
+                Text.literal("name"), Text.literal("name")
+        );
+        name.setText(this.secret.name);
 
         EditBoxWidget issuer = new EditBoxWidget(textRenderer,
                 this.width / 2 - 100,
@@ -48,6 +53,7 @@ public class CreateSecretScreen extends Screen {
                 200,
                 20,
                 Text.literal("issuer"), Text.literal("issuer"));
+        issuer.setText(this.secret.issuer);
 
         EditBoxWidget secret = new EditBoxWidget(textRenderer,
                 this.width / 2 - 100,
@@ -55,6 +61,7 @@ public class CreateSecretScreen extends Screen {
                 200,
                 20,
                 Text.literal("secret"), Text.literal("secret"));
+        secret.setText(this.secret.secret);
 
         ButtonWidget saveButton = ButtonWidget.builder(saveButtonText, this::save).dimensions(this.width / 2 - 103, this.height - 40, 100, 20).build();
 
@@ -123,17 +130,10 @@ public class CreateSecretScreen extends Screen {
             return;
         }
 
-        if (Authenticator.getInstance().getSecretFromName(name) != null) {
-            this.client.getToastManager().add(new SystemToast(
-                    SystemToast.Type.NARRATOR_TOGGLE,
-                    Text.literal("Failed!"),
-                    Text.literal(name + " already exists.")
-            ));
-            activateButtonDelayed(btn, 1000, true);
-            return;
-        }
+        Secret newSecret = new Secret(name, issuer, secret);
 
-        Authenticator.getInstance().createSecret(secret, name, issuer);
+        Authenticator.getInstance().replaceSecret(this.secret, newSecret);
+        ((AuthenticatorScreen)background).secretsWidget.setSecrets(Authenticator.getInstance().secrets);
 
         this.client.getToastManager().add(new SystemToast(
                 SystemToast.Type.NARRATOR_TOGGLE,

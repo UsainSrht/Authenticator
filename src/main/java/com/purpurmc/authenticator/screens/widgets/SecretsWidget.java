@@ -1,7 +1,7 @@
 package com.purpurmc.authenticator.screens.widgets;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.GlStateManager;
+import com.purpurmc.authenticator.Authenticator;
 import com.purpurmc.authenticator.GAuth;
 import com.purpurmc.authenticator.Secret;
 import com.purpurmc.authenticator.screens.AuthenticatorScreen;
@@ -9,13 +9,9 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawableHelper;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
-import net.minecraft.client.gui.screen.world.WorldListWidget;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
-import net.minecraft.client.render.entity.PlayerModelPart;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
@@ -26,8 +22,7 @@ import java.util.*;
 
 public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.Entry> {
     private final AuthenticatorScreen screen;
-    private List<SecretEntry> secrets = Lists.newArrayList();
-    private SecretEntry selectedEntry;
+    private final List<SecretEntry> secrets = Lists.newArrayList();
     public SecretsWidget(AuthenticatorScreen screen, MinecraftClient client, int width, int height, int top, int bottom, int entryHeight) {
         super(client, width, height, top, bottom, entryHeight);
         this.screen = screen;
@@ -44,17 +39,20 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
 
     private void updateEntries() {
         this.clearEntries();
-        this.secrets.forEach(this::addEntry);
+        secrets.forEach(this::addEntry);
     }
 
     public void setSelected(@Nullable SecretEntry entry) {
         super.setSelected(entry);
-        this.screen.updateButtonActivationStates();
+        screen.updateButtonActivationStates();
     }
 
-    public void setSecrets(List<SecretEntry> secrets) {
-        this.secrets = secrets;
-        this.updateEntries();
+    public void deleteEntry(SecretEntry entry) {
+        Authenticator.LOGGER.info("deleteEntry before secrets " + secrets.size() + "entrycount " + super.getEntryCount());
+        secrets.remove(entry);
+        super.removeEntry(entry);
+        Authenticator.LOGGER.info("deleteEntry after secrets " + secrets.size() + "entrycount " + super.getEntryCount());
+        updateEntries();
     }
 
     public void setSecrets(HashSet<Secret> secrets) {
@@ -84,14 +82,13 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
     }
 
     @Environment(EnvType.CLIENT)
-    public static class SecretEntry extends SecretsWidget.Entry {
+    public class SecretEntry extends SecretsWidget.Entry {
         private static final Text LOADING_LIST_TEXT = Text.translatable("text.authenticator.loading");
         private final MinecraftClient client;
-        private final String name;
-        private final String issuer;
-        private final String secret;
+        public final String name;
+        public final String issuer;
+        public final String secret;
         private int code;
-        private int time;
         private long clickTime;
 
         public SecretEntry(MinecraftClient client, Secret secret) {
@@ -99,6 +96,10 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
             this.name = secret.name;
             this.issuer = secret.issuer;
             this.secret = secret.secret;
+        }
+
+        public Secret getSecret() {
+            return new Secret(name, issuer, secret);
         }
 
         @Override
@@ -112,7 +113,7 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
             String codeString = String.valueOf(code);
             int codeWidth = renderer.getWidth(codeString);
             renderer.draw(matrices, codeString, x + entryWidth - codeWidth - 10, y + 1, color);
-            time = (int) (30 - ((new Date().getTime() / 1000) % 30));
+            int time = (int) (30 - ((new Date().getTime() / 1000) % 30));
             String timeString = String.valueOf(time);
             int timeWidth = renderer.getWidth(timeString);
             renderer.draw(matrices, timeString, x + entryWidth - timeWidth - 10, y + 11, color);
@@ -120,8 +121,6 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
 
         @Override
         public boolean mouseClicked(double mouseX, double mouseY, int button) {
-            this.setFocused(true);
-            ((AuthenticatorScreen)this.client.currentScreen).updateButtonActivationStates();
             if (Util.getMeasuringTimeMs() - this.clickTime < 250L) {
                 String code = String.valueOf(this.code);
                 this.client.keyboard.setClipboard(code);
@@ -132,7 +131,22 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
             } else {
                 this.clickTime = Util.getMeasuringTimeMs();
             }
+            SecretsWidget.this.setSelected((SecretsWidget.Entry)this);
+            ((AuthenticatorScreen)this.client.currentScreen).updateButtonActivationStates();
             return true;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Secret)) return false;
+            Secret anotherSecret = (Secret)o;
+            return (this.name.equals(anotherSecret.name) && this.issuer.equals(anotherSecret.issuer) &&
+                    this.secret.equals(anotherSecret.secret));
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(name, issuer, secret);
         }
 
         public Text getNarration() {
