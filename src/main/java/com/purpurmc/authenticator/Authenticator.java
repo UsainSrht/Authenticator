@@ -35,6 +35,7 @@ public class Authenticator implements ModInitializer {
         }
 
         LOGGER.info("Authenticator initialized.");
+
     }
 
     public static Authenticator getInstance() {
@@ -44,7 +45,7 @@ public class Authenticator implements ModInitializer {
     public void loadConfig() throws IOException {
         File config = new File(FabricLoader.getInstance().getConfigDir().toString(), "authenticator-secrets.json");
         if (!config.exists()) {
-            boolean omg = config.createNewFile();
+            config.createNewFile();
             FileWriter fw = new FileWriter(config);
             fw.write("[]");
             fw.close();
@@ -79,9 +80,7 @@ public class Authenticator implements ModInitializer {
         LOGGER.info("removeSecret " + secretName);
         Secret secret = getSecretFromName(secretName);
         if (secret == null) return;
-        LOGGER.info("before removeSecret " + secrets.size());
         secrets.remove(secret);
-        LOGGER.info("after removeSecret " + secrets.size());
         saveSecrets();
     }
 
@@ -101,11 +100,9 @@ public class Authenticator implements ModInitializer {
     }
 
     public void replaceSecret(Secret secret1, Secret secret2) {
-        LOGGER.info("replace start secrets size " + secrets.size());
+        LOGGER.info("replaceSecret " + secret1 + " with " + secret2);
         secrets.remove(secret1);
-        LOGGER.info("replace after remove secrets size " + secrets.size());
         secrets.add(secret2);
-        LOGGER.info("replace after add secrets size " + secrets.size());
         saveSecrets();
     }
 }

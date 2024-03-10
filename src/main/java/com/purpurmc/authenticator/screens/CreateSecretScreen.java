@@ -1,17 +1,14 @@
 package com.purpurmc.authenticator.screens;
 
 import com.purpurmc.authenticator.Authenticator;
-import com.purpurmc.authenticator.commands.AuthenticatorCommand;
 import joptsimple.internal.Strings;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.EditBoxWidget;
 import net.minecraft.client.toast.SystemToast;
-import net.minecraft.client.toast.Toast;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 import java.util.Timer;
@@ -71,10 +68,10 @@ public class CreateSecretScreen extends Screen {
     }
 
     @Override
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    public void render(DrawContext matrices, int mouseX, int mouseY, float delta) {
         this.renderBackgroundTexture(matrices);
         super.render(matrices, mouseX, mouseY, delta);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, TITLE, this.width / 2, 10, 0xFFFFFFFF);
+        matrices.drawCenteredTextWithShadow(textRenderer, TITLE, this.width / 2, 10, 0xFFFFFFFF);
     }
 
     @Override

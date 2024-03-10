@@ -11,6 +11,7 @@ import com.purpurmc.authenticator.Secret;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.text.*;
+import net.minecraft.util.Formatting;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -54,7 +55,7 @@ public class AuthenticatorCommand {
         HoverEvent hoverEvent = new HoverEvent(HoverEvent.Action.SHOW_TEXT, Text.translatable("chat.copy.click"));
         Text textCode = Text.literal(stringCode).setStyle(Style.EMPTY
                 .withUnderline(true)
-                .withColor(TextColor.parse("yellow"))
+                .withColor(Formatting.YELLOW)
                 .withHoverEvent(hoverEvent)
                 .withClickEvent(clickEvent)
         );

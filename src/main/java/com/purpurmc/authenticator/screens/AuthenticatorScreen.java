@@ -1,17 +1,13 @@
 package com.purpurmc.authenticator.screens;
 
 import com.purpurmc.authenticator.Authenticator;
-import com.purpurmc.authenticator.Secret;
 import com.purpurmc.authenticator.screens.widgets.SecretsWidget;
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.world.SelectWorldScreen;
-import net.minecraft.client.gui.screen.world.WorldListWidget;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 
 public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<Screen> {
@@ -70,7 +66,6 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
                 this.width,
                 this.height - 100,
                 50,
-                this.height - 50,
                 25
         );
         secretsWidget.setSecrets(Authenticator.getInstance().secrets);
@@ -83,10 +78,10 @@ public class AuthenticatorScreen extends Screen implements ConfigScreenFactory<S
         this.addDrawableChild(backButton);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
-        this.renderBackgroundTexture(matrices);
-        super.render(matrices, mouseX, mouseY, delta);
-        DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, title, this.width / 2, 15, 0xFFFFFFFF);
+    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+        this.renderBackgroundTexture(drawContext);
+        super.render(drawContext, mouseX, mouseY, delta);
+        drawContext.drawCenteredTextWithShadow(textRenderer, title, this.width / 2, 15, 0xFFFFFFFF);
         //DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, Text.literal(mouseX + " " + mouseY + " " + delta), this.width / 2, 20, 0xFFFFFFFF);
         //DrawableHelper.drawCenteredTextWithShadow(matrices, textRenderer, Text.literal("width " + this.width + " height " + this.height), this.width / 2, 30, 0xFFFFFFFF);
     }

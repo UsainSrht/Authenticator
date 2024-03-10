@@ -9,11 +9,10 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.screen.narration.NarrationMessageBuilder;
 import net.minecraft.client.gui.widget.AlwaysSelectedEntryListWidget;
 import net.minecraft.client.toast.SystemToast;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
@@ -23,8 +22,8 @@ import java.util.*;
 public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.Entry> {
     private final AuthenticatorScreen screen;
     private final List<SecretEntry> secrets = Lists.newArrayList();
-    public SecretsWidget(AuthenticatorScreen screen, MinecraftClient client, int width, int height, int top, int bottom, int entryHeight) {
-        super(client, width, height, top, bottom, entryHeight);
+    public SecretsWidget(AuthenticatorScreen screen, MinecraftClient client, int width, int height, int top, int bottom) {
+        super(client, width, height, top, bottom);
         this.screen = screen;
     }
 
@@ -33,9 +32,10 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
         return super.hoveredElement(mouseX, mouseY);
     }
 
-    public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
+    /*@Override
+    public void render(DrawContext matrices, int mouseX, int mouseY, float delta) {
         super.render(matrices, mouseX, mouseY, delta);
-    }
+    }*/
 
     private void updateEntries() {
         this.clearEntries();
@@ -76,10 +76,8 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
         return super.getRowWidth() + 85;
     }
 
-    @Override
-    public void appendNarrations(NarrationMessageBuilder builder) {
-
-    }
+    /*@Override
+    public void appendNarrations(NarrationMessageBuilder builder) {}*/
 
     @Environment(EnvType.CLIENT)
     public abstract static class Entry extends AlwaysSelectedEntryListWidget.Entry<SecretsWidget.Entry> {
@@ -109,20 +107,20 @@ public class SecretsWidget extends AlwaysSelectedEntryListWidget<SecretsWidget.E
         }
 
         @Override
-        public void render(MatrixStack matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+        public void render(DrawContext matrices, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
             TextRenderer renderer = this.client.textRenderer;
 
             int color = -1;
-            renderer.draw(matrices, this.name, x + 6, y + 1, color);
-            renderer.draw(matrices, this.issuer, x + 6, y + 11, color);
+            matrices.drawText(renderer, this.name, x + 6, y + 1, color, true);
+            matrices.drawText(renderer, this.issuer, x + 6, y + 11, color, true);
             code = GAuth.getCode(this.secret);
             String codeString = String.valueOf(code);
             int codeWidth = renderer.getWidth(codeString);
-            renderer.draw(matrices, codeString, x + entryWidth - codeWidth - 10, y + 1, color);
+            matrices.drawText(renderer, codeString, x + entryWidth - codeWidth - 10, y + 1, color, true);
             int time = (int) (30 - ((new Date().getTime() / 1000) % 30));
             String timeString = String.valueOf(time);
             int timeWidth = renderer.getWidth(timeString);
-            renderer.draw(matrices, timeString, x + entryWidth - timeWidth - 10, y + 11, color);
+            matrices.drawText(renderer, timeString, x + entryWidth - timeWidth - 10, y + 11, color, true);
         }
 
         @Override

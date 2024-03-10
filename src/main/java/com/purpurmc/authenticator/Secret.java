@@ -19,8 +19,7 @@ public class Secret {
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof Secret)) return false;
-        Secret other = (Secret)o;
+        if (!(o instanceof Secret other)) return false;
         return (name.equalsIgnoreCase(other.name) && issuer.equalsIgnoreCase(other.issuer) && secret.equalsIgnoreCase(other.secret));
     }
 
